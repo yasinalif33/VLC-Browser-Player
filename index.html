@@ -770,7 +770,7 @@
 
   var fallbackStage = 0;
   var converting = false;
-  var proxyList = ['https://corsproxy.io/?url=', 'https://api.allorigins.win/raw?url=', 'https://api.codetabs.com/v1/proxy?quest='];
+  var proxyList = ['https://api.allorigins.win/raw?url=', 'https://api.codetabs.com/v1/proxy?quest='];
   var proxyIndex = 0;
   function proxyUrl(src, idx){ return proxyList[idx % proxyList.length] + encodeURIComponent(src); }
   function loadScript(src){
