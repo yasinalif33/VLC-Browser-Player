@@ -311,6 +311,7 @@
       <div class="samples">
         <h3>Sample streams</h3>
         <button class="sample" type="button" data-sample="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-name="Big Buck Bunny (sample)"><span style="color:#eee"><b>Big Buck Bunny</b><small>Blender Foundation · 9:56 · MP4</small></span><span>▶ Play</span></button>
+        <button class="sample" type="button" data-sample="https://www.w3schools.com/html/mov_bbb.mp4" data-name="Big Buck Bunny (small mirror)"><span style="color:#eee"><b>Big Buck Bunny — small mirror</b><small>W3Schools · short clip · MP4 — try this if the Google samples fail</small></span><span>▶ Play</span></button>
         <button class="sample" type="button" data-sample="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4" data-name="Sintel (sample)"><span style="color:#eee"><b>Sintel</b><small>Blender Foundation · 14:48 · MP4</small></span><span>▶ Play</span></button>
         <button class="sample" type="button" data-sample="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" data-name="Elephants Dream (sample)"><span style="color:#eee"><b>Elephants Dream</b><small>Orange Studio · 10:53 · MP4</small></span><span>▶ Play</span></button>
       </div>
@@ -349,7 +350,8 @@
         <span>Now playing: <strong id="metaName">Nothing loaded</strong></span><span class="dot"></span>
         <span id="metaRes">—</span><span class="dot"></span>
         <span id="metaSize">—</span><span class="dot"></span>
-        <span>Subtitles: <strong id="metaSub">None</strong></span>
+        <span>Subtitles: <strong id="metaSub">None</strong></span><span class="dot"></span>
+        <span id="metaDiag" style="font-size:12px;opacity:.85"></span>
       </div>
 
       <div class="effects" id="effectsPanel">
@@ -767,6 +769,12 @@
       msg = 'Could not play this file/stream in your browser — unsupported format or codec.';
     }
     setStatus('Playback failed');
+    var diagEl = document.getElementById('metaDiag');
+    if(diagEl){
+      var mp4 = video.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"') || 'no';
+      var webm = video.canPlayType('video/webm; codecs="vp9, opus"') || 'no';
+      diagEl.textContent = 'Diag: error ' + code + ' · network ' + video.networkState + ' · ready ' + video.readyState + ' · MP4 support: ' + mp4 + ' · WebM support: ' + webm + ' · src: ' + (item ? item.url : '');
+    }
     toast(msg, 12000);
   });
   seek.addEventListener('input', function(){
