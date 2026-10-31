@@ -14,6 +14,17 @@ media info, and VLC-style keyboard shortcuts.
 Open `index.html` in a browser, or serve this repository with GitHub Pages
 (Source: Deploy from a branch, branch `main`, folder `/ (root)`).
 
+The interface follows desktop VLC 3: title bar, Media / Playback /
+Audio / Video / Subtitle / Tools / View / Help menus, an icon toolbar,
+the video area, a seek bar with transport controls, and the playlist
+table below the player.
+
+When a file does not play natively, the player retries it through a
+secure proxy for streams, then converts it in the browser with
+ffmpeg.wasm (video copied where possible, audio converted to AAC) and
+plays the converted MP4 — so MKV and dual-audio files get a browser
+version instead of stopping at an error.
+
 ## Notes
 
 - This is an original browser player inspired by VLC's interface and

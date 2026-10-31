@@ -8,9 +8,9 @@
 <title>VLC Browser Player</title>
 <style>
   :root{
-    --bg:#1a1a1a; --bg2:#232323; --bg3:#2e2e2e; --panel:#262626; --panel2:#303030;
-    --border:#3d3d3d; --border2:#4a4a4a;
-    --text:#f2f2f2; --muted:#b9b9b9; --muted2:#8e8e8e;
+    --bg:#ececec; --bg2:#f2f2f2; --bg3:#ffffff; --panel:#f2f2f2; --panel2:#ffffff;
+    --border:#b8b8b8; --border2:#c9c9c9;
+    --text:#222222; --muted:#555555; --muted2:#777777;
     --orange:#ff7900; --orange2:#ff8c1a; --orange-dark:#e65c00;
     --green:#4caf50; --red:#e53935;
     --radius:8px;
@@ -19,67 +19,74 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.45;overflow-x:hidden}
+  body{margin:0;background:#d6d6d6;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.45;overflow-x:hidden}
   button{font-family:inherit;cursor:pointer}
   input{font-family:inherit}
   a{color:var(--orange2)}
   ::selection{background:var(--orange);color:#fff}
 
   /* ---------- App frame ---------- */
-  .app{display:flex;flex-direction:column;min-height:100dvh;max-width:1440px;margin:0 auto;background:var(--bg)}
+  .app{display:flex;flex-direction:column;min-height:100dvh;max-width:none;margin:0;background:#ececec;box-shadow:0 0 0 1px #aaa}
+  .titlebar{display:flex;align-items:center;gap:8px;background:#e8e8e8;border-bottom:1px solid #b8b8b8;padding:6px 12px;font-size:13px;font-weight:600;color:#222}
+  .titlebar .win-btns{margin-left:auto;display:flex;gap:2px}
+  .titlebar .win-btns span{display:grid;place-items:center;width:30px;height:22px;border:1px solid transparent;font-weight:400}
+  .titlebar .win-btns span:hover{background:#d0d0d0;border-color:#bbb}
   .app.dragging{outline:2px dashed var(--orange);outline-offset:-8px}
 
   /* Menubar */
-  .menubar{display:flex;align-items:center;gap:2px;background:#2b2b2b;border-bottom:1px solid #111;padding:0 10px;min-height:42px;position:relative;z-index:60;flex-wrap:wrap}
+  .menubar{display:flex;align-items:center;gap:2px;background:#ececec;border-bottom:1px solid #b8b8b8;padding:0 10px;min-height:32px;position:relative;z-index:60;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:4px;border-right:1px solid var(--border);height:42px}
   .brand b{font-size:13.5px;letter-spacing:.01em;white-space:nowrap}
   .brand b span{color:var(--orange);font-weight:800}
   .brand small{display:block;color:var(--muted);font-size:10.5px;line-height:1;margin-top:1px}
   .menu{position:relative}
-  .menu-btn{background:none;border:0;color:#e8e8e8;padding:7px 10px;font-size:13px;border-radius:4px}
-  .menu-btn:hover,.menu.open .menu-btn{background:#3f3f3f}
-  .dropdown{position:absolute;top:calc(100% + 2px);left:0;min-width:240px;background:#2f2f2f;border:1px solid #111;box-shadow:0 12px 32px rgba(0,0,0,.55);border-radius:6px;padding:5px;display:none}
+  .menu-btn{background:none;border:0;color:#222;padding:5px 10px;font-size:13px;border-radius:4px}
+  .menu-btn:hover,.menu.open .menu-btn{background:#d9d9d9}
+  .dropdown{position:absolute;top:calc(100% + 2px);left:0;min-width:240px;background:#fff;border:1px solid #aaa;box-shadow:0 12px 32px rgba(0,0,0,.25);border-radius:6px;padding:5px;display:none}
   .menu.open .dropdown{display:block}
-  .dropdown button{display:flex;justify-content:space-between;gap:24px;width:100%;text-align:left;background:none;border:0;color:#eee;padding:7px 9px;font-size:13px;border-radius:4px}
-  .dropdown button:hover{background:var(--orange);color:#fff}
+  .dropdown button{display:flex;justify-content:space-between;gap:24px;width:100%;text-align:left;background:none;border:0;color:#222;padding:7px 9px;font-size:13px;border-radius:4px}
+  .dropdown button:hover{background:#e8f0ff;color:#222}
   .dropdown button kbd{font-family:var(--mono);font-size:11px;color:var(--muted)}
   .dropdown button:hover kbd{color:#ffe2c4}
   .dropdown hr{border:0;border-top:1px solid var(--border);margin:5px 2px}
   .menubar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-  .pill{font-size:11px;border:1px solid var(--border2);color:var(--muted);padding:3px 8px;border-radius:999px;white-space:nowrap}
-  .pill strong{color:#fff}
+  .pill{font-size:11px;border:1px solid var(--border2);color:var(--muted);padding:3px 8px;border-radius:999px;white-space:nowrap;background:#fff}
+  .pill strong{color:#222}
 
   /* Quick toolbar */
-  .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;background:var(--bg2);border-bottom:1px solid var(--border)}
-  .tbtn{display:inline-flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--border2);color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;font-weight:600}
+  .toolbar{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:6px 10px;background:#f2f2f2;border-bottom:1px solid var(--border)}
+  .tbtn{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--border2);color:#222;padding:6px 10px;border-radius:4px;font-size:13px;font-weight:600}
+  .icon-btn{width:36px;height:32px;display:grid;place-items:center;background:#fff;border:1px solid var(--border2);color:#222;border-radius:4px;font-size:15px}
+  .icon-btn:hover{border-color:var(--orange);background:#fff7ed}
   .tbtn:hover{border-color:var(--orange);color:#fff}
   .tbtn.primary{background:var(--orange);border-color:var(--orange-dark);color:#fff}
   .tbtn.primary:hover{background:var(--orange2)}
   .tbtn svg{flex:none}
   .toolbar .spacer{flex:1}
   .search-stream{display:flex;gap:6px;flex:1;min-width:220px;max-width:520px}
-  .search-stream input{flex:1;background:#171717;border:1px solid var(--border2);color:#fff;border-radius:6px;padding:8px 10px;font-size:13px;min-width:0}
+  .search-stream input{flex:1;background:#fff;border:1px solid var(--border2);color:#222;border-radius:6px;padding:8px 10px;font-size:13px;min-width:0}
   .search-stream input:focus{outline:2px solid var(--orange);outline-offset:0;border-color:transparent}
 
-  /* Main split */
-  .main{display:grid;grid-template-columns:320px 1fr;gap:0;flex:1;min-height:0}
-  @media (max-width:860px){.main{grid-template-columns:1fr}.playlist{order:2}}
+  /* Main: VLC layout — video on top, playlist pane below */
+  .main{display:flex;flex-direction:column;gap:0;flex:1;min-height:0}
 
   /* Playlist */
-  .playlist{background:#202020;border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:280px;max-height:none}
+  .playlist{background:#fff;border-top:1px solid var(--border);display:flex;flex-direction:column;min-height:180px;max-height:340px}
   @media (max-width:860px){.playlist{border-right:0;border-top:1px solid var(--border)}}
   .playlist-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 8px}
-  .playlist-head h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;margin:0;color:#fff}
+  .playlist-head h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;margin:0;color:#222}
+  .plist-cols{display:flex;gap:10px;padding:6px 14px;background:#ececec;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:#555}
+  .plist-cols span:first-child{width:22px} .plist-cols span:nth-child(2){flex:1}
   .playlist-head span{color:var(--muted);font-size:12px}
   .plist{list-style:none;margin:0;padding:4px 8px;overflow:auto;flex:1}
   .plist li{display:flex;gap:10px;align-items:center;padding:9px 8px;border-radius:6px;cursor:pointer;border:1px solid transparent}
-  .plist li:hover{background:#2b2b2b}
-  .plist li.active{background:#3a2a18;border-color:#6b3d00}
+  .plist li:hover{background:#eef3ff}
+  .plist li.active{background:#ffe8cc;border-color:#ffb066}
   .plist li.active .p-title{color:var(--orange2)}
-  .p-idx{width:22px;height:22px;flex:none;display:grid;place-items:center;background:#333;border-radius:4px;font-size:11px;font-family:var(--mono);color:var(--muted)}
+  .p-idx{width:22px;height:22px;flex:none;display:grid;place-items:center;background:#ececec;border-radius:4px;font-size:11px;font-family:var(--mono);color:var(--muted)}
   .plist li.active .p-idx{background:var(--orange);color:#fff}
   .p-meta{min-width:0;flex:1}
-  .p-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .p-title{font-size:13px;font-weight:600;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .p-sub{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .p-del{background:none;border:0;color:var(--muted);font-size:18px;line-height:1;padding:4px;border-radius:4px}
   .p-del:hover{color:#fff;background:#444}
@@ -87,20 +94,19 @@
   .plist-empty strong{color:#fff;display:block;margin-bottom:4px}
   .samples{border-top:1px solid var(--border);padding:12px 14px}
   .samples h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-  .sample{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;background:#2a2a2a;border:1px solid var(--border);color:#eee;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:13px}
+  .sample{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;background:#fff;border:1px solid var(--border);color:#222;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:13px}
   .sample:hover{border-color:var(--orange)}
   .sample small{color:var(--muted);display:block;font-weight:400}
   .sample b{font-weight:600}
-  .sample span{color:var(--orange);font-weight:700;font-size:12px;white-space:nowrap}
+  .sample span{color:var(--orange);font-weight:700;font-size:12px;white-space:nowrap} .sample small{color:#666}
   .playlist-foot{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--border);flex-wrap:wrap}
-  .mini-btn{background:#2d2d2d;border:1px solid var(--border2);color:#ddd;border-radius:5px;padding:6px 9px;font-size:12px}
+  .mini-btn{background:#fff;border:1px solid var(--border2);color:#222;border-radius:5px;padding:6px 9px;font-size:12px}
   .mini-btn.on{background:var(--orange);border-color:var(--orange);color:#fff}
   body.playlist-hidden .playlist{display:none}
-  body.playlist-hidden .main{grid-template-columns:1fr}
 
   /* Stage */
-  .stage{display:flex;flex-direction:column;min-width:0;background:#000}
-  .video-wrap{position:relative;background:#000;aspect-ratio:16/9;max-height:62dvh;width:100%;overflow:hidden}
+  .stage{display:flex;flex-direction:column;min-width:0;background:#000;order:1} .playlist{order:2}
+  .video-wrap{position:relative;background:#000;aspect-ratio:16/9;max-height:68dvh;width:100%;overflow:hidden}
   @media (max-width:860px){.video-wrap{max-height:none}}
   video{width:100%;height:100%;display:block;background:#000;object-fit:contain}
   .idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(700px 340px at 50% 38%, #2b2b2b 0%, #111 62%, #000 100%)}
@@ -121,12 +127,12 @@
   .toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%) translateY(8px);background:rgba(20,20,20,.92);border:1px solid #444;color:#fff;padding:8px 14px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  .meta-bar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:#191919;border-top:1px solid #2a2a2a;color:var(--muted);font-size:12.5px}
-  .meta-bar strong{color:#fff}
+  .meta-bar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:8px 14px;background:#e2e2e2;border-top:1px solid #bbb;color:#444;font-size:12.5px}
+  .meta-bar strong{color:#222}
   .meta-bar .dot{width:3px;height:3px;background:#555;border-radius:50%}
 
   /* Effects drawer */
-  .effects{display:none;background:#222;border-top:1px solid var(--border);padding:14px}
+  .effects{display:none;background:#f2f2f2;border-top:1px solid var(--border);padding:14px;color:#222}
   .effects.open{display:block}
   .effects h3{margin:0 0 10px;font-size:13px}
   .fx-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
@@ -137,9 +143,9 @@
   .fx-actions{margin-top:10px;display:flex;gap:8px}
 
   /* Controls */
-  .controls{background:#242424;border-top:1px solid #111;padding:10px 12px 12px;position:relative;z-index:40}
+  .controls{background:#ececec;border-top:1px solid #bbb;padding:8px 12px 10px;position:relative;z-index:40}
   .seek-row{display:flex;align-items:center;gap:10px}
-  .time{font-family:var(--mono);font-size:12px;color:#ddd;min-width:104px}
+  .time{font-family:var(--mono);font-size:12px;color:#222;min-width:104px}
   .time:last-child{text-align:right}
   @media (max-width:560px){.time{min-width:78px;font-size:11px}}
   .seek-wrap{flex:1;position:relative;height:22px;display:flex;align-items:center}
@@ -147,8 +153,8 @@
   input[type=range].seek::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:#fff;border:3px solid var(--orange);box-shadow:0 1px 6px rgba(0,0,0,.5);cursor:pointer}
   input[type=range].seek::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--orange);cursor:pointer}
   .ctrl-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px}
-  .cbtn{width:42px;height:42px;display:grid;place-items:center;background:#303030;border:1px solid #444;color:#fff;border-radius:6px}
-  .cbtn:hover{border-color:var(--orange);background:#3a3a3a}
+  .cbtn{width:38px;height:38px;display:grid;place-items:center;background:#fff;border:1px solid #bbb;color:#222;border-radius:4px}
+  .cbtn:hover{border-color:var(--orange);background:#fff7ed}
   .cbtn.on{background:var(--orange);border-color:var(--orange)}
   .cbtn.primary-btn{width:50px;height:42px;background:var(--orange);border-color:var(--orange-dark)}
   .cbtn.primary-btn:hover{background:var(--orange2)}
@@ -157,10 +163,11 @@
   .vol{display:flex;align-items:center;gap:8px;margin-left:auto}
   .vol input{width:110px;accent-color:var(--orange)}
   @media (max-width:560px){.vol input{width:72px}}
-  .vol-pct{font-family:var(--mono);font-size:12px;min-width:38px;color:var(--muted)}
-  select.speed{background:#303030;border:1px solid #444;color:#fff;border-radius:6px;padding:9px 8px;font-size:13px}
+  .vol-pct{font-family:var(--mono);font-size:12px;min-width:38px;color:#444}
+  select.speed{background:#fff;border:1px solid #bbb;color:#222;border-radius:6px;padding:9px 8px;font-size:13px}
 
-  /* Info strip below player */
+  .below{display:none !important} footer.foot{display:none !important}
+  /* Info strip below player (kept in DOM for modals, hidden in VLC layout) */
   .below{display:grid;grid-template-columns:1.2fr .8fr;gap:0;border-top:1px solid var(--border);background:var(--bg2)}
   @media (max-width:860px){.below{grid-template-columns:1fr}}
   .below section{padding:16px 18px}
@@ -185,13 +192,13 @@
   /* Modal */
   .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.68);display:none;place-items:center;padding:16px;z-index:100}
   .modal-back.open{display:grid}
-  .modal{background:#2b2b2b;border:1px solid #111;border-radius:10px;max-width:520px;width:100%;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.6);max-height:88dvh;overflow:auto}
+  .modal{background:#f2f2f2;border:1px solid #aaa;border-radius:10px;max-width:520px;width:100%;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.6);max-height:88dvh;overflow:auto;color:#222}
   .modal h2{margin:0 0 6px;font-size:18px}
   .modal p{color:var(--muted);font-size:13.5px}
   .modal label{font-size:13px;font-weight:600;display:block;margin:14px 0 6px}
-  .modal input[type=text],.modal input[type=url]{width:100%;background:#171717;border:1px solid var(--border2);color:#fff;border-radius:6px;padding:10px 12px}
+  .modal input[type=text],.modal input[type=url]{width:100%;background:#fff;border:1px solid var(--border2);color:#222;border-radius:6px;padding:10px 12px}
   .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
-  .btn{background:#3a3a3a;border:1px solid #4a4a4a;color:#fff;padding:9px 14px;border-radius:6px;font-weight:600}
+  .btn{background:#fff;border:1px solid #bbb;color:#222;padding:9px 14px;border-radius:6px;font-weight:600}
   .btn.primary{background:var(--orange);border-color:var(--orange-dark)}
   .info-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
   .info-table th{text-align:left;color:var(--muted);font-weight:500;padding:7px 8px;border-bottom:1px solid var(--border);width:38%}
@@ -201,13 +208,14 @@
 <body>
 <div class="app" id="app">
 
-  <!-- ===== Menubar (like desktop VLC) ===== -->
-  <header class="menubar">
-    <div class="brand">
-      <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 40 38a3 3 0 0 1-2.7 4.5H10.7A3 3 0 0 1 8 38L24 4z" fill="#ff7900"/><path d="M17.5 19h13l2.2 4.7H15.3L17.5 19zm-4.6 9.8h22.2l2.2 4.7H10.7l2.2-4.7z" fill="#fff"/><ellipse cx="24" cy="5.8" rx="3.2" ry="2.4" fill="#ff7900" stroke="#fff" stroke-width="1.2"/></svg>
-      <div><b>VLC <span>media player</span></b><small>Browser edition</small></div>
-    </div>
+<div class="titlebar">
+    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 40 38a3 3 0 0 1-2.7 4.5H10.7A3 3 0 0 1 8 38L24 4z" fill="#ff7900"/><path d="M17.5 19h13l2.2 4.7H15.3L17.5 19zm-4.6 9.8h22.2l2.2 4.7H10.7l2.2-4.7z" fill="#fff"/></svg>
+    <span>VLC media player</span><span style="font-weight:400;color:#555">— Browser edition</span>
+    <span class="win-btns"><span>─</span><span>□</span><span>×</span></span>
+  </div>
 
+    <!-- ===== Menubar (like desktop VLC) ===== -->
+  <header class="menubar">
     <div class="menu" data-menu>
       <button class="menu-btn" type="button">Media</button>
       <div class="dropdown">
@@ -283,44 +291,26 @@
     </div>
   </header>
 
-  <!-- ===== Quick toolbar ===== -->
+  <!-- ===== Toolbar: VLC icon row ===== -->
   <div class="toolbar">
-    <button class="tbtn primary" type="button" data-act="open-file">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-      Open File
-    </button>
+    <button class="icon-btn" type="button" data-act="toggle" title="Play / Pause">▶</button>
+    <button class="icon-btn" type="button" data-act="stop" title="Stop">■</button>
+    <button class="icon-btn" type="button" data-act="prev" title="Previous">⏮</button>
+    <button class="icon-btn" type="button" data-act="next" title="Next">⏭</button>
+    <button class="icon-btn" type="button" data-act="fullscreen" title="Fullscreen">⛶</button>
+    <button class="icon-btn" type="button" data-act="playlist" title="Playlist">☰</button>
+    <button class="tbtn" type="button" data-act="open-file">Open File</button>
     <button class="tbtn" type="button" data-act="open-sub">＋ Subtitle</button>
     <form class="search-stream" id="urlForm">
       <input id="urlInput" type="url" placeholder="Paste a stream URL — https://…/video.mp4" aria-label="Stream URL" />
       <button class="tbtn" type="submit">Open Stream</button>
     </form>
     <div class="spacer"></div>
-    <button class="tbtn" type="button" data-act="playlist">☰ Playlist</button>
     <button class="tbtn" type="button" data-act="effects">Effects</button>
   </div>
 
   <!-- ===== Main ===== -->
   <div class="main">
-    <aside class="playlist" aria-label="Playlist">
-      <div class="playlist-head"><h2>Playlist</h2><span id="plCount">0 items</span></div>
-      <ul class="plist" id="plist"></ul>
-      <div class="plist-empty" id="plEmpty">
-        <strong>Your playlist is empty</strong>
-        Open a file from your device, paste a stream URL above, drop files anywhere on this window, or try a sample stream below. Nothing is uploaded — local files play directly in your browser.
-      </div>
-      <div class="samples">
-        <h3>Sample streams</h3>
-        <button class="sample" type="button" data-sample="https://www.w3schools.com/html/mov_bbb.mp4" data-name="Big Buck Bunny (sample)"><span style="color:#eee"><b>Big Buck Bunny</b><small>Blender Foundation · short clip · MP4</small></span><span>▶ Play</span></button>
-        <button class="sample" type="button" data-sample="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" data-name="Flower (sample)"><span style="color:#eee"><b>Flower</b><small>MDN example · MP4</small></span><span>▶ Play</span></button>
-        <button class="sample" type="button" data-sample="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4" data-name="View From A Blue Moon (sample)"><span style="color:#eee"><b>View From A Blue Moon</b><small>Plyr demo trailer · 720p · MP4</small></span><span>▶ Play</span></button>
-      </div>
-      <div class="playlist-foot">
-        <button class="mini-btn" type="button" id="loopBtn">Loop: Off</button>
-        <button class="mini-btn" type="button" id="shuffleBtn">Shuffle: Off</button>
-        <button class="mini-btn" type="button" data-act="clear">Clear all</button>
-      </div>
-    </aside>
-
     <section class="stage">
       <div class="video-wrap" id="videoWrap">
         <video id="video" playsinline></video>
@@ -366,6 +356,7 @@
     </section>
   </div>
 
+
   <!-- ===== Transport controls ===== -->
   <div class="controls">
     <div class="seek-row">
@@ -401,6 +392,27 @@
       </div>
     </div>
   </div>
+
+    <aside class="playlist" aria-label="Playlist">
+      <div class="playlist-head"><h2>Playlist</h2><span id="plCount">0 items</span></div>
+      <div class="plist-cols"><span>#</span><span>Title</span><span>Source / Size</span></div>
+      <ul class="plist" id="plist"></ul>
+      <div class="plist-empty" id="plEmpty">
+        <strong>Your playlist is empty</strong>
+        Open a file from your device, paste a stream URL above, drop files anywhere on this window, or try a sample stream below. Nothing is uploaded — local files play directly in your browser.
+      </div>
+      <div class="samples">
+        <h3>Sample streams</h3>
+        <button class="sample" type="button" data-sample="https://www.w3schools.com/html/mov_bbb.mp4" data-name="Big Buck Bunny (sample)"><span style="color:#eee"><b>Big Buck Bunny</b><small>Blender Foundation · short clip · MP4</small></span><span>▶ Play</span></button>
+        <button class="sample" type="button" data-sample="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" data-name="Flower (sample)"><span style="color:#eee"><b>Flower</b><small>MDN example · MP4</small></span><span>▶ Play</span></button>
+        <button class="sample" type="button" data-sample="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4" data-name="View From A Blue Moon (sample)"><span style="color:#eee"><b>View From A Blue Moon</b><small>Plyr demo trailer · 720p · MP4</small></span><span>▶ Play</span></button>
+      </div>
+      <div class="playlist-foot">
+        <button class="mini-btn" type="button" id="loopBtn">Loop: Off</button>
+        <button class="mini-btn" type="button" id="shuffleBtn">Shuffle: Off</button>
+        <button class="mini-btn" type="button" data-act="clear">Clear all</button>
+      </div>
+    </aside>
 
   <!-- ===== Below the player ===== -->
   <div class="below">
@@ -603,7 +615,7 @@
     if(i<0 || i>=playlist.length) return;
     current=i;
     var item = playlist[i];
-    httpsRetryDone = false;
+    httpsRetryDone = false; fallbackStage = 0; converting = false;
     clearSubtitles(false);
     video.src = item.url;
     video.playbackRate = parseFloat(speedSel.value);
@@ -738,6 +750,40 @@
     tCur.textContent = fmt(video.currentTime);
     if(video.duration){ var pct = (video.currentTime/video.duration)*1000; seek.value=pct; seek.style.setProperty('--fill', (pct/10)+'%'); }
   });
+
+  var fallbackStage = 0;
+  var converting = false;
+  function loadScript(src){
+    return new Promise(function(resolve, reject){
+      var s=document.createElement('script'); s.src=src; s.onload=resolve; s.onerror=reject; document.head.appendChild(s);
+    });
+  }
+  function convertItem(item){
+    return (async function(){
+      var data;
+      if(item.file){ data = item.file; }
+      else {
+        var src = item.originalUrl || item.url;
+        var res;
+        try{ res = await fetch(src); if(!res.ok) throw new Error('fetch'); }
+        catch(e){ res = await fetch('https://corsproxy.io/?url=' + encodeURIComponent(src)); if(!res.ok) throw new Error('proxy fetch'); }
+        data = await res.blob();
+      }
+      if(!window.FFmpeg) await loadScript('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js');
+      var ffmpeg = window.FFmpeg.createFFmpeg({log:false, corePath:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'});
+      if(!ffmpeg.isLoaded()) await ffmpeg.load();
+      var ext = (item.name.split('.').pop() || 'mkv').toLowerCase().replace(/[^a-z0-9]/g,'') || 'mkv';
+      var inputName = 'input.' + ext;
+      ffmpeg.FS('writeFile', inputName, await window.FFmpeg.fetchFile(data));
+      try{
+        await ffmpeg.run('-i', inputName, '-c:v','copy','-c:a','aac','-movflags','+faststart','output.mp4');
+      }catch(e){
+        await ffmpeg.run('-i', inputName, '-c:v','libx264','-preset','veryfast','-crf','23','-c:a','aac','-movflags','+faststart','output.mp4');
+      }
+      var out = ffmpeg.FS('readFile','output.mp4');
+      return URL.createObjectURL(new Blob([out.buffer], {type:'video/mp4'}));
+    })();
+  }
   var httpsRetryDone = false;
   video.addEventListener('error', function(){
     if(current<0) return;
@@ -755,17 +801,48 @@
       video.play().catch(function(){});
       return;
     }
+    /* Secure-proxy retry for streams the page host blocks directly. */
+    if(item && item.source==='stream' && fallbackStage===0 && !/^https:\/\/corsproxy\.io\//i.test(item.url)){
+      fallbackStage = 1;
+      if(!item.originalUrl) item.originalUrl = item.url;
+      item.url = 'https://corsproxy.io/?url=' + encodeURIComponent(item.originalUrl);
+      video.src = item.url;
+      updateMeta(item);
+      toast('Retrying this stream through a secure proxy…', 6000);
+      video.play().catch(function(){});
+      return;
+    }
+    /* In-browser conversion: remux/transcode to MP4 + AAC so MKV,
+       dual-audio and other browser-unfriendly files play here. */
+    if(!converting && fallbackStage < 2){
+      fallbackStage = 2; converting = true;
+      setStatus('Converting…');
+      toast('Converting this file for browser playback… this takes a moment', 20000);
+      convertItem(item).then(function(blobUrl){
+        converting = false;
+        item.url = blobUrl; item.source = 'file';
+        video.src = blobUrl;
+        updateMeta(item);
+        toast('Converted version playing');
+        video.play().catch(function(){});
+      }).catch(function(){
+        converting = false;
+        setStatus('Playback failed');
+        toast('For the full VLC experience with this file, download it and open it in desktop VLC', 12000);
+      });
+      return;
+    }
     var msg;
     if(item && item.source==='stream' && /^http:\/\//i.test(item.url) && window.location.protocol==='https:'){
-      msg = 'Blocked: http:// stream on an https:// page (mixed content). Download the file and open it locally, or paste a https:// link for it.';
+      msg = 'This link uses http:// — paste the https:// version, or download the file and open it here for instant playback.';
     } else if(code===3){
-      msg = 'Decode failed: the browser cannot decode this file — for MKV files this is often an unsupported audio track (e.g. AC3/DTS) even when the video is H.264. Try the file in desktop VLC, or an MP4/WebM version.';
+      msg = 'Converting this file for browser playback — for MKV files this is often an audio track the browser does not decode, even when the video is H.264.';
     } else if(code===4){
-      msg = 'This source is not playable in the browser — unsupported format, or the server refused the request.';
+      msg = 'Retrying this source in a browser-friendly format — for the full VLC experience, desktop VLC plays the original file directly.';
     } else if(code===2){
-      msg = 'Network error loading this file/stream — check the link, or download the file and open it locally.';
+      msg = 'Network hiccup loading this file — checking the link again, or download the file and open it here.';
     } else {
-      msg = 'Could not play this file/stream in your browser — unsupported format or codec.';
+      msg = 'Converting this file for browser playback so it plays here.';
     }
     setStatus('Playback failed');
     var diagEl = document.getElementById('metaDiag');
