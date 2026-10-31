@@ -774,6 +774,7 @@
   var fallbackStage = 0;
   var converting = false;
   var proxyList = ['https://api.allorigins.win/raw?url=', 'https://api.codetabs.com/v1/proxy?quest='];
+  function isDriveUrl(u){ return /drive\.google\.com|drive\.usercontent\.google\.com/i.test(u || ''); }
   var proxyIndex = 0;
   function proxyUrl(src, idx){ return proxyList[idx % proxyList.length] + encodeURIComponent(src); }
   function loadScript(src){
@@ -833,6 +834,22 @@
       updateMeta(item);
       toast('http:// stream blocked on this https:// page — retrying over https…', 5000);
       video.play().catch(function(){});
+      return;
+    }
+    /* Google Drive links are download links, not video stream links:
+       they need the user's own Google session and a download step,
+       and sending their temporary token to a proxy does not help. */
+    if(item && isDriveUrl(item.originalUrl || item.url)){
+      setStatus('Ready for the converted version');
+      var reasonEl2 = document.getElementById('convertReason');
+      if(reasonEl2) reasonEl2.textContent = 'Conversion detail: this is a Google Drive download link. Download it in your own browser, where your Google session works, then open the downloaded file here.';
+      var cmdEl2 = document.getElementById('ffmpegCmd');
+      if(cmdEl2){
+        var nm2 = item.name || 'video.mkv';
+        var base2 = nm2.replace(/\.[^.]+$/, '');
+        cmdEl2.value = 'ffmpeg -i "' + nm2 + '" -map 0:v:0 -map 0:a:0 -c:v copy -c:a aac -movflags +faststart "' + base2 + '.mp4"';
+      }
+      openModal('convertModal');
       return;
     }
     /* Secure-proxy retries for streams the page host blocks directly. */
