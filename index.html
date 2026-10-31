@@ -323,7 +323,7 @@
 
     <section class="stage">
       <div class="video-wrap" id="videoWrap">
-        <video id="video" playsinline crossorigin="anonymous"></video>
+        <video id="video" playsinline></video>
 
         <div class="idle" id="idle">
           <svg width="92" height="92" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 40 38a3 3 0 0 1-2.7 4.5H10.7A3 3 0 0 1 8 38L24 4z" fill="#ff7900"/><path d="M17.5 19h13l2.2 4.7H15.3L17.5 19zm-4.6 9.8h22.2l2.2 4.7H10.7l2.2-4.7z" fill="#fff"/><ellipse cx="24" cy="5.8" rx="3.2" ry="2.4" fill="#ff7900" stroke="#fff" stroke-width="1.2"/></svg>
@@ -537,9 +537,9 @@
     var u=['B','KB','MB','GB'], i=0; while(b>=1024 && i<3){b/=1024;i++;}
     return b.toFixed(b>=100?0:1)+' '+u[i];
   }
-  function toast(msg){
+  function toast(msg, ms){
     toastEl.textContent = msg; toastEl.classList.add('show');
-    clearTimeout(toastTimer); toastTimer = setTimeout(function(){toastEl.classList.remove('show');}, 2200);
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){toastEl.classList.remove('show');}, ms || 2200);
   }
   function setStatus(s){ statusPill.innerHTML = 'Status: <strong>'+s+'</strong>'; }
 
@@ -602,6 +602,7 @@
     if(i<0 || i>=playlist.length) return;
     current=i;
     var item = playlist[i];
+    httpsRetryDone = false;
     clearSubtitles(false);
     video.src = item.url;
     video.playbackRate = parseFloat(speedSel.value);
@@ -736,8 +737,37 @@
     tCur.textContent = fmt(video.currentTime);
     if(video.duration){ var pct = (video.currentTime/video.duration)*1000; seek.value=pct; seek.style.setProperty('--fill', (pct/10)+'%'); }
   });
+  var httpsRetryDone = false;
   video.addEventListener('error', function(){
-    if(current>=0) toast('Could not play this file/stream in your browser — codec or CORS may be unsupported');
+    if(current<0) return;
+    var item = playlist[current];
+    var code = video.error ? video.error.code : 0;
+    /* Browsers block http:// media on an https:// page (mixed content).
+       Many file hosts do serve the same file over https, so retry once
+       with https before declaring the stream unplayable. */
+    if(item && item.source==='stream' && !httpsRetryDone && /^http:\/\//i.test(item.url) && window.location.protocol==='https:'){
+      httpsRetryDone = true;
+      item.url = item.url.replace(/^http:\/\//i, 'https://');
+      video.src = item.url;
+      updateMeta(item);
+      toast('http:// stream blocked on this https:// page — retrying over https…', 5000);
+      video.play().catch(function(){});
+      return;
+    }
+    var msg;
+    if(item && item.source==='stream' && /^http:\/\//i.test(item.url) && window.location.protocol==='https:'){
+      msg = 'Blocked: http:// stream on an https:// page (mixed content). Download the file and open it locally, or paste a https:// link for it.';
+    } else if(code===3){
+      msg = 'Decode failed: the browser cannot decode this file — for MKV files this is often an unsupported audio track (e.g. AC3/DTS) even when the video is H.264. Try the file in desktop VLC, or an MP4/WebM version.';
+    } else if(code===4){
+      msg = 'This source is not playable in the browser — unsupported format, or the server refused the request.';
+    } else if(code===2){
+      msg = 'Network error loading this file/stream — check the link, or download the file and open it locally.';
+    } else {
+      msg = 'Could not play this file/stream in your browser — unsupported format or codec.';
+    }
+    setStatus('Playback failed');
+    toast(msg, 12000);
   });
   seek.addEventListener('input', function(){
     if(video.duration) video.currentTime = (seek.value/1000)*video.duration;
@@ -784,8 +814,8 @@
   function snapshot(){
     if(!video.videoWidth){ toast('Nothing to snapshot yet'); return; }
     var cv=document.createElement('canvas'); cv.width=video.videoWidth; cv.height=video.videoHeight;
-    try{ cv.getContext('2d').drawImage(video,0,0); }catch(e){ toast('Snapshot blocked for this stream (CORS)'); return; }
-    var a=document.createElement('a'); a.download='vlc-snapshot-'+Date.now()+'.png'; a.href=cv.toDataURL('image/png'); a.click(); toast('Snapshot saved');
+    try{ cv.getContext('2d').drawImage(video,0,0); var png=cv.toDataURL('image/png'); }catch(e){ toast('Snapshot blocked for this stream (CORS) — playback is unaffected'); return; }
+    var a=document.createElement('a'); a.download='vlc-snapshot-'+Date.now()+'.png'; a.href=png; a.click(); toast('Snapshot saved');
   }
   function fullscreen(){
     var el=document.getElementById('videoWrap');
