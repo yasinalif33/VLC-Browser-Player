@@ -463,6 +463,9 @@
   <div class="modal" role="dialog" aria-modal="true">
     <h2>Play this file in the browser player</h2>
     <p>Browser conversion works best for smaller files. For a large stream like this one, download it once, convert it once in desktop VLC, and the result plays everywhere in the browser player.</p>
+    <p id="convertReason" style="font-size:13px;color:#333;background:#fff7ed;border:1px solid #ffb066;border-radius:6px;padding:8px 10px"></p>
+    <label for="ffmpegCmd" style="font-size:13px;font-weight:600;display:block;margin:12px 0 6px">Fast local conversion (video copied, audio converted to AAC):</label>
+    <div style="display:flex;gap:6px"><input type="text" id="ffmpegCmd" readonly style="flex:1;background:#fff;border:1px solid #bbb;color:#222;border-radius:6px;padding:8px 10px;font-family:monospace;font-size:12px"><button class="btn" type="button" id="copyCmd">Copy</button></div>
     <ol style="font-size:13.5px;line-height:1.7;margin:0;padding-left:20px">
       <li>Tap <strong>Download original</strong> below and save the file to your device.</li>
       <li>In desktop VLC: <strong>Media &gt; Convert / Save</strong>, add the downloaded file, tap <strong>Convert</strong>.</li>
@@ -778,7 +781,9 @@
       var s=document.createElement('script'); s.src=src; s.onload=resolve; s.onerror=reject; document.head.appendChild(s);
     });
   }
+  var lastConvertError = '';
   function convertItem(item){
+    lastConvertError = '';
     return (async function(){
       var data;
       if(item.file){ data = item.file; }
@@ -792,20 +797,22 @@
             try{ var pr = await fetch(proxyUrl(src, pi)); if(pr.ok){ res = pr; break; } lastErr = new Error('proxy ' + pi); }catch(e){ lastErr = e; }
           }
         }
-        if(!res) throw lastErr || new Error('fetch failed');
+        if(!res){ lastConvertError = 'Download step stopped: ' + (lastErr && lastErr.message ? lastErr.message : 'proxy fetch'); throw lastErr || new Error('fetch failed'); }
         data = await res.blob();
       }
-      if(!window.FFmpeg) await loadScript('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js');
+      try{ if(!window.FFmpeg) await loadScript('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js'); }catch(e){ lastConvertError = 'Conversion engine download stopped: ' + e.message; throw e; }
       var ffmpeg = window.FFmpeg.createFFmpeg({log:false, corePath:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'});
       try{ ffmpeg.setProgress(function(pr){ if(pr && isFinite(pr.ratio)) setStatus('Converting… ' + Math.round(pr.ratio*100) + '%'); }); }catch(e){}
-      if(!ffmpeg.isLoaded()) await ffmpeg.load();
+      try{ if(!ffmpeg.isLoaded()) await ffmpeg.load(); }catch(e){ lastConvertError = 'Conversion engine load stopped: ' + e.message; throw e; }
       var ext = (item.name.split('.').pop() || 'mkv').toLowerCase().replace(/[^a-z0-9]/g,'') || 'mkv';
       var inputName = 'input.' + ext;
       ffmpeg.FS('writeFile', inputName, await window.FFmpeg.fetchFile(data));
       try{
         await ffmpeg.run('-i', inputName, '-c:v','copy','-c:a','aac','-movflags','+faststart','output.mp4');
       }catch(e){
-        await ffmpeg.run('-i', inputName, '-c:v','libx264','-preset','veryfast','-crf','23','-c:a','aac','-movflags','+faststart','output.mp4');
+        lastConvertError = 'Fast remux stopped, trying full transcode: ' + e.message;
+        try{ await ffmpeg.run('-i', inputName, '-c:v','libx264','-preset','veryfast','-crf','23','-c:a','aac','-movflags','+faststart','output.mp4'); }
+        catch(e2){ lastConvertError = 'Conversion stopped: ' + e2.message; throw e2; }
       }
       var out = ffmpeg.FS('readFile','output.mp4');
       return URL.createObjectURL(new Blob([out.buffer], {type:'video/mp4'}));
@@ -855,6 +862,14 @@
       }).catch(function(){
         converting = false;
         setStatus('Ready for the converted version');
+        var reasonEl = document.getElementById('convertReason');
+        if(reasonEl) reasonEl.textContent = lastConvertError ? ('Conversion detail: ' + lastConvertError) : 'Conversion detail: the file stopped during download or conversion.';
+        var cmdEl = document.getElementById('ffmpegCmd');
+        if(cmdEl){
+          var nm = item.name || 'video.mkv';
+          var base = nm.replace(/\.[^.]+$/, '');
+          cmdEl.value = 'ffmpeg -i "' + nm + '" -map 0:v:0 -map 0:a:0 -c:v copy -c:a aac -movflags +faststart "' + base + '.mp4"';
+        }
         openModal('convertModal');
         toast('Download the original, convert it once in desktop VLC, and the MP4 plays here', 12000);
       });
@@ -961,6 +976,9 @@
     else toast('Load a stream first');
   }
   document.getElementById('dlGo').addEventListener('click', downloadOriginal);
+  document.getElementById('copyCmd').addEventListener('click', function(){
+    var el = document.getElementById('ffmpegCmd'); if(el){ el.select(); try{ document.execCommand('copy'); toast('ffmpeg command copied'); }catch(e){ toast('Copy the command from the box'); } }
+  });
   document.getElementById('dlBtn').addEventListener('click', downloadOriginal);
 
   var actions={
